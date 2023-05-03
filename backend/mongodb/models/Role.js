@@ -1,9 +1,19 @@
 import mongoose from "mongoose";
 
 const Role = new mongoose.Schema({
-    name: String,
+    name: {
+        type:String,
+        unique: true
+    },
+    role:{
+        type:String,
+        unique: true
+    },
     child:[String],
-    email:String,
+    email:{
+        type: String,
+        unique: true
+    },
     password:String,
     parent:String,
 })
