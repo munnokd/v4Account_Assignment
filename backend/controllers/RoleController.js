@@ -1,4 +1,7 @@
 import RoleSchema from "../mongodb/models/Role.js";
+import jwt from 'jsonwebtoken'
+
+const secretKey = "backend"
 
 // name: {
 //     type:String,
@@ -23,9 +26,10 @@ export const First = async (req, res) => {
     }
 }
 
-export const GetAll = async (req, res) => {
+export const GetAllRole = async (req, res) => {
     try {
         const list = await RoleSchema.find({});
+        
         res.status(200).send(list);
     }
     catch (e) {
@@ -33,46 +37,72 @@ export const GetAll = async (req, res) => {
     }
 }
 
-export const UpdateParent = async (parent, total) => {
+export const Signup = async (req, res) => {
     try {
-        if (!parent) return;
-        const parent_data = await RoleSchema.findById(parent);
-        total = +total;
-        await RoleSchema.findOneAndUpdate({ _id: parent }, { target_sales_value: +parent_data.target_sales_value + total });
-        await UpdateParent(parent_data.parent, +parent_data.target_sales_value + total);
+        await RoleSchema.findOneAndUpdate({ _id: req.body.id }, { name: req.body.name, email: req.body.email, password: req.body.password });
+
+        const data = await RoleSchema.findOne({ _id: req.body.id })
+
+        jwt.sign({ data }, secretKey, { expiresIn: '86400' }, (err, token) => {
+            res.json({
+                token
+            })
+        })
     }
     catch (e) {
         res.status(404).send("Error");
     }
 }
 
-export const GetParent = async (id, data) => {
+export const Login = async (req, res) => {
     try {
-        if (!id) return;
-        const parent_data = await RoleSchema.findById(id);
+        const data = await RoleSchema.findOne({ email: req.body.email });
 
-        data.push(parent_data);
-        await GetParent(parent_data.parent, data);
-        return;
+        if (data) {
+            const result = req.body.password === data.password;
+            if (result) {
+                jwt.sign({ data }, secretKey, { expiresIn: '86400' }, (err, token) => {
+                    res.json({
+                        token
+                    })
+                })
+            } else {
+                const response = {
+                    "errors": true,
+                    "message": "Password doesn't matched",
+                    "data": null
+                };
+
+                res.status(200).send(response);
+            }
+        } else {
+            const response = {
+                "errors": false,
+                "message": "Credential doesn't matched",
+                "data": null
+            };
+
+            res.status(200).send(response);
+        }
     }
     catch (e) {
-        res.status(404).send("Error");
+        res.status(404).send("Error" + e);
     }
 }
 
 export const addNewRole = async (req, res) => {
     try {
-        let { role, parent } = req.body;
+        let { role, parent, name, email } = req.body;
         // console.log(parent);
         if (parent) {
             const parent_data = await RoleSchema.findById(parent);
-            
+
             const newNode = await RoleSchema({
                 role,
                 parent,
+                name,
+                email,
             });
-
-            // await UpdateParent(parent);
 
             const data = await newNode.save();
             parent_data.child.push(data._id);
@@ -80,16 +110,17 @@ export const addNewRole = async (req, res) => {
             await parent_data.save();
 
             let response = {
-                "errors": false,
-                "message": "Role Added successfully",
-                "data": parent_data
+                errors: false,
+                message: "Role Added successfully",
+                data: data,
             };
 
             res.status(200).send(response);
-
         } else {
             const newNode = await RoleSchema({
                 role,
+                name,
+                email,
             });
             const data = await newNode.save();
             res.status(200).send(data);
@@ -97,28 +128,24 @@ export const addNewRole = async (req, res) => {
     } catch (e) {
         res.status(404).send("Error : " + e);
     }
-}
+};
 
-export const GetLevelCategoryInfo = async (req, res) => {
+export const getChild = async (req, res) => {
     try {
-        const { level } = req.params;
-        const list = await RoleSchema.find({ level: level });
-        res.status(200).send(list);
-    }
-    catch (e) {
-        res.status(404).send("Error");
-    }
-}
+        const list = await RoleSchema.findOne({_id: req.body.id});
 
-export const GetAllParentId = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const data = []
-        await GetParent(id, data);
+        let data = []
+
+        data.push(list)
+
+        for(let i = 0 ; i < list.child.length ; i++){
+            const childData = await RoleSchema.findOne({_id: list.child[i]});
+            data.push(childData)
+        }
+        
         res.status(200).send(data);
     }
     catch (e) {
         res.status(404).send("Error");
     }
 }
-

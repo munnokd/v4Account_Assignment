@@ -1,7 +1,8 @@
-import React, { Fragment, useState } from 'react'
-import { Link } from 'react-router-dom';
+import React, { Fragment, useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom';
 import { Listbox, Transition } from '@headlessui/react'
 import { CheckIcon } from '@heroicons/react/20/solid'
+import axios from '../axios'
 
 const Signup = () => {
     const people = [
@@ -66,21 +67,45 @@ const Signup = () => {
                 'https://images.unsplash.com/photo-1561505457-3bcad021f8ee?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
         },
     ]
-    const [selected, setSelected] = useState(people[3])
+
+    const [selected, setSelected] = useState([])
+    const [email, setEmail] = useState("")
+    const [name, setName] = useState("")
+    const [password, setPassword] = useState("")
+    const [cpassword, setCpassword] = useState("")
+
+    const navigate = useNavigate()
 
     function classNames(...classes) {
         return classes.filter(Boolean).join(' ')
     }
 
+    useEffect(() => {
+        axios.get(`/role/get-role`)
+            .then((res) => {
+                console.log(res.data)
+                setSelected(res.data)
+            })
+            .catch((error) => {
+                console.log(error);
+            })
+    }, [])
 
     const handleFormSubmit = (e) => {
         e.preventDefault();
 
-        let email = e.target.elements.email?.value;
-        let password = e.target.elements.password?.value;
-
-        console.log(email, password);
+        axios.post(`/role/signup`, { parent: selected, name: name, email: email, password: password })
+            .then((res) => {
+                console.log(res)
+            })
+            .catch((error) => {
+                console.log(error);
+            })
     };
+
+    if (localStorage.getItem('token')) {
+        navigate("/")
+    }
     return (
         <div className='flex justify-center items-center w-full h-[100%]'>
             <div className='w-[30%]'>
@@ -90,14 +115,18 @@ const Signup = () => {
                         <input
                             type="text"
                             name="name"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
                             className="block w-full rounded-md border-0 py-1.5 pl-4 pr-4 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:outline-none sm:text-sm sm:leading-6 mb-[10px]"
                             placeholder="Enter Your Name"
                         />
                     </div>
                     <div className='flex'>
                         <input
-                            type="text"
+                            type="email"
                             name="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             className="block w-full rounded-md border-0 py-1.5 pl-4 pr-4 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:outline-none sm:text-sm sm:leading-6 my-[10px]"
                             placeholder="Enter Your Email"
                         />
@@ -106,6 +135,8 @@ const Signup = () => {
                         <input
                             type="password"
                             name="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                             className="block w-full rounded-md border-0 py-1.5 pl-4 pr-4 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:outline-none sm:text-sm sm:leading-6 my-[10px]"
                             placeholder="Enter Your Password"
                         />
@@ -114,6 +145,8 @@ const Signup = () => {
                         <input
                             type="password"
                             name="repassword"
+                            value={cpassword}
+                            onChange={(e) => setCpassword(e.target.value)}
                             className="block w-full rounded-md border-0 py-1.5 pl-4 pr-4 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:outline-none sm:text-sm sm:leading-6 my-[10px]"
                             placeholder="Enter Your Confirm Password"
                         />
@@ -124,7 +157,7 @@ const Signup = () => {
                                 <div className="relative flex mt-2">
                                     <Listbox.Button className="relative w-[65%] cursor-default rounded-md bg-white py-1.5 pl-2 pr-2 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 sm:text-sm sm:leading-6">
                                         <span className="flex items-center">
-                                            <span className="ml-1 block truncate">Select Role</span>
+                                            <span className="ml-1 block truncate">{selected.length !== 0 ? selected[0].name : 'Select Role'}</span>
                                         </span>
                                         <span className="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-gray-400">
@@ -146,9 +179,9 @@ const Signup = () => {
                                         leaveTo="opacity-0"
                                     >
                                         <Listbox.Options className="absolute z-10 max-h-56 w-[65%] mt-[40px] overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                                            {people.map((person) => (
+                                            {selected.map((person) => (
                                                 <Listbox.Option
-                                                    key={person.id}
+                                                    key={person._id}
                                                     className={({ active }) =>
                                                         classNames(
                                                             active ? 'bg-gray-800 text-white' : 'text-gray-900',
@@ -190,10 +223,13 @@ const Signup = () => {
 
                     <div className='mt-[10px]'>
                         <button type="submit"
-                            className="flex w-full justify-center rounded-md bg-gray-800 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
+                            className="flex w-full mt-[20px] justify-center rounded-md bg-gray-800 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
                         >Signup</button>
                     </div>
                 </form>
+                <div className='mt-[15px]'>
+                    <Link to='/login' className='text-[dodgerblue] ml-[10px]' >Go to Login page</Link>
+                </div>
             </div>
         </div>
     );

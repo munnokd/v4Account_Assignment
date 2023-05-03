@@ -7,7 +7,7 @@ const Role = new mongoose.Schema({
     },
     role:{
         type:String,
-        unique: true
+        unique:true
     },
     child:[String],
     email:{
