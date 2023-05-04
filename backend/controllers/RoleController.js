@@ -3,29 +3,6 @@ import jwt from 'jsonwebtoken'
 
 const secretKey = "backend"
 
-// name: {
-//     type:String,
-//     unique: true
-// },
-// child:[String],
-// email:{
-//     type: String,
-//     unique: true
-// },
-// password:String,
-// parent:String,
-
-export const First = async (req, res) => {
-    try {
-        res.status(200).send('hello to here');
-    }
-    catch (e) {
-
-        res.status(404).send("Error");
-
-    }
-}
-
 export const GetAllRole = async (req, res) => {
     try {
         const list = await RoleSchema.find({});
@@ -41,8 +18,8 @@ export const Signup = async (req, res) => {
     try {
         await RoleSchema.findOneAndUpdate({ _id: req.body.id }, { name: req.body.name, email: req.body.email, password: req.body.password });
 
-        const data = await RoleSchema.findOne({ _id: req.body.id })
-
+        const data = await RoleSchema.findOne({_id: req.body.id});
+        
         jwt.sign({ data }, secretKey, { expiresIn: '86400' }, (err, token) => {
             res.json({
                 token
@@ -93,7 +70,7 @@ export const Login = async (req, res) => {
 export const addNewRole = async (req, res) => {
     try {
         let { role, parent, name, email } = req.body;
-        // console.log(parent);
+
         if (parent) {
             const parent_data = await RoleSchema.findById(parent);
 

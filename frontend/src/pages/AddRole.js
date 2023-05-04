@@ -2,11 +2,15 @@ import React, { Fragment, useEffect, useState } from 'react'
 import { Listbox, Transition } from '@headlessui/react'
 import { CheckIcon } from '@heroicons/react/20/solid'
 import axios from '../axios'
+import { useNavigate } from 'react-router-dom'
 
 const AddRole = () => {
 
     const [role, setRole] = useState("")
-    const [selected, setSelected] = useState([])
+    const [selected, setSelected] = useState(null)
+    const [roleData, setRoleData] = useState([])
+
+    const navigate = useNavigate()
 
     function classNames(...classes) {
         return classes.filter(Boolean).join(' ')
@@ -15,20 +19,32 @@ const AddRole = () => {
     useEffect(() => {
         axios.get(`/role/get-role`)
             .then((res) => {
-                console.log(res.data)
-                setSelected(res.data)
+                // console.log(res.data)
+                setRoleData(res.data)
+                setSelected(roleData[0])
             })
             .catch((error) => {
                 console.log(error);
             })
     }, [])
+    // console.log(roleData)
 
     const handleFormSubmit = (e) => {
         e.preventDefault();
 
-        axios.post(`/role/add-role`, { role: role, parent: selected })
+        // console.log(role)
+        selected && console.log(selected._id)
+
+        const parentId = selected ? selected._id : ""
+
+        axios.post(`/role/add-role`, { role: role, parent: parentId, name:'', email:'' }, {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
             .then((res) => {
-                console.log(res)
+                // console.log(res)
+                navigate('/signup')
             })
             .catch((error) => {
                 console.log(error);
@@ -44,6 +60,7 @@ const AddRole = () => {
                             type="text"
                             name="role"
                             value={role}
+                            required
                             onChange={(e) => setRole(e.target.value)}
                             className="block w-full rounded-md border-0 py-1.5 pl-4 pr-4 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:outline-none sm:text-sm sm:leading-6 mb-[10px]"
                             placeholder="Role"
@@ -55,7 +72,7 @@ const AddRole = () => {
                                 <div className="relative flex mt-2">
                                     <Listbox.Button className="relative w-[100%] cursor-default rounded-md bg-white py-1.5 pl-2 pr-2 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 sm:text-sm sm:leading-6">
                                         <span className="flex items-center">
-                                            <span className="ml-1 block truncate">{selected.length !== 0 ? selected[0].name : 'Under'}</span>
+                                            <span className="ml-1 block truncate"  >{selected ? selected.role : 'under'}</span>
                                         </span>
                                         <span className="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-gray-400">
@@ -72,7 +89,7 @@ const AddRole = () => {
                                         leaveTo="opacity-0"
                                     >
                                         <Listbox.Options className="absolute z-10 max-h-56 w-[100%] mt-[40px] overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                                            {selected.map((person) => (
+                                            {roleData.map((person) => (
                                                 <Listbox.Option
                                                     key={person._id}
                                                     className={({ active }) =>
@@ -89,7 +106,7 @@ const AddRole = () => {
                                                                 <span
                                                                     className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}
                                                                 >
-                                                                    {person.name}
+                                                                    {person.role}
                                                                 </span>
                                                             </div>
 

@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
+.kalp{
+    margin-left: 60px !important;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+}
 @tailwind utilities;
