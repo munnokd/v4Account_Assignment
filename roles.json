@@ -1,0 +1,61 @@
+[{
+  "_id": {
+    "$oid": "64533653897e03a3f6cc6d1b"
+  },
+  "name": "kalp",
+  "role": "user1",
+  "child": [
+    "64533680897e03a3f6cc6d2c",
+    "645336a0897e03a3f6cc6d3a"
+  ],
+  "email": "kalp@gmail.com",
+  "__v": 2,
+  "password": "kalp"
+},{
+  "_id": {
+    "$oid": "64533680897e03a3f6cc6d2c"
+  },
+  "name": "zeel",
+  "role": "user2",
+  "child": [
+    "645336c6897e03a3f6cc6d4f",
+    "645336ec897e03a3f6cc6d5d"
+  ],
+  "email": "zeel@gmail.com",
+  "parent": "64533653897e03a3f6cc6d1b",
+  "__v": 2,
+  "password": "zeel"
+},{
+  "_id": {
+    "$oid": "645336a0897e03a3f6cc6d3a"
+  },
+  "name": "akr",
+  "role": "user3",
+  "child": [],
+  "email": "akr@gmail.com",
+  "parent": "64533653897e03a3f6cc6d1b",
+  "__v": 0,
+  "password": "akr"
+},{
+  "_id": {
+    "$oid": "645336c6897e03a3f6cc6d4f"
+  },
+  "name": "zeel1",
+  "role": "user2.1",
+  "child": [],
+  "email": "zeel1@gmail.com",
+  "parent": "64533680897e03a3f6cc6d2c",
+  "__v": 0,
+  "password": "zeel1"
+},{
+  "_id": {
+    "$oid": "645336ec897e03a3f6cc6d5d"
+  },
+  "name": "zeel2",
+  "role": "user2.2",
+  "child": [],
+  "email": "zeel2@gmail.com",
+  "parent": "64533680897e03a3f6cc6d2c",
+  "__v": 0,
+  "password": "zeel2"
+}]
